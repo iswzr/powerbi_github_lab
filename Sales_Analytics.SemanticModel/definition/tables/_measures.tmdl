@@ -1,0 +1,28 @@
+table _measures
+	lineageTag: 3f9740c6-945f-4221-a0c7-90f3ab1280a0
+
+	measure 'Total Profit' = SUM(financials[Profit])
+		displayFolder: Profit
+		lineageTag: b3b00781-47a7-4124-9ea4-30d0d2988e0d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Column1
+		dataType: string
+		lineageTag: 31770757-50d4-419c-9e31-08251b41c35e
+		summarizeBy: none
+		sourceColumn: Column1
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _measures = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Column1", type text}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

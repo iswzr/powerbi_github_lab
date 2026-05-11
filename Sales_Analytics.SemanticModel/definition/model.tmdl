@@ -8,11 +8,12 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
-annotation PBI_QueryOrder = ["financials"]
+annotation PBI_QueryOrder = ["financials","_measures"]
 
 annotation PBI_ProTooling = ["DevMode"]
 
 ref table financials
+ref table _measures
 
 ref cultureInfo en-US
 
