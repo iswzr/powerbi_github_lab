@@ -1,7 +1,7 @@
 table _measures
 	lineageTag: 3f9740c6-945f-4221-a0c7-90f3ab1280a0
 
-	measure 'Total Profit' = SUM(financials[Profit])
+	measure 'Total Profit' = SUM(financials[Profit]) * 0.8
 		displayFolder: Profit
 		lineageTag: b3b00781-47a7-4124-9ea4-30d0d2988e0d
 
