@@ -7,6 +7,12 @@ table _measures
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
+	measure Sale = SUM(financials[Gross Sales])
+		displayFolder: Profit
+		lineageTag: d7223cfb-1cb5-452d-9104-0517d3bae940
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
 	column Column1
 		dataType: string
 		lineageTag: 31770757-50d4-419c-9e31-08251b41c35e
