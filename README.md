@@ -25,7 +25,7 @@ The core of the visual is powered by a single DAX measure (`SVG_AllInOne_KPI_Fin
 ## 🚀 How to Use This Repo
 1. Clone this repository to your local machine.
 2. Open the `Sales_Analytics.pbip` file in Power BI Desktop (requires Power BI Developer Mode to be enabled in Preview Features).
-3. Review the `SVG_AllInOne_KPI_Final` measure in the data pane.
+3. Review the `SVG_LinearProgressBar` measure in the data pane.
 4. Add a native **Image Visual** to the canvas and bind the measure to it. 
 
 ---
