@@ -1,28 +1,154 @@
 table _measures
 	lineageTag: 3f9740c6-945f-4221-a0c7-90f3ab1280a0
 
-	measure 'Total Profit' = SUM(financials[Profit]) * 0.8
-		displayFolder: Profit
+	measure Gross_Profit = [Total_Sales] - [Total_COGS]
+		displayFolder: Basic
 		lineageTag: b3b00781-47a7-4124-9ea4-30d0d2988e0d
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
-	column Column1
-		dataType: string
-		lineageTag: 31770757-50d4-419c-9e31-08251b41c35e
-		summarizeBy: none
-		sourceColumn: Column1
+	measure Total_Sales = SUM(financials[Sales])
+		displayFolder: Basic
+		lineageTag: bb0d79eb-7a1b-4a23-aa70-e6324fd528b5
 
-		annotation SummarizationSetBy = Automatic
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure Total_COGS = SUM(financials[COGS])
+		displayFolder: Basic
+		lineageTag: f943966d-9c46-43c1-9986-c974fa4161ca
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure Cost_Pct_of_Sales = DIVIDE([Total_COGS], [Total_Sales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Basic
+		lineageTag: 143dc462-8a08-4625-b0a5-e336887ab480
+
+	measure SVG_CostProgressBar = ```
+			
+			VAR Pct = [Cost_Pct_of_Sales]
+			VAR BarFill = IF(Pct <= 0.70, "#449E74", "#D9534F") 
+			VAR BackgroundFill = "#DDE2E5"
+			RETURN
+			"data:image/svg+xml;utf8," & 
+			"<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 100 10'>
+			    <rect x='0' y='0' width='100' height='10' rx='4' fill='" & BackgroundFill & "'/>
+			    <rect x='0' y='0' width='" & Pct * 100 & "' height='10' rx='4' fill='" & BarFill & "'/>
+			</svg>"
+			```
+		displayFolder: CF
+		lineageTag: a22eedf6-4266-4e64-a42b-e08e5e6bca56
+
+	measure SVG_CostProgressRing = ```
+			
+			// 1. Define the Data
+			VAR Pct = [Cost_Pct_of_Sales]
+			VAR PctText = FORMAT(Pct, "0%")
+			
+			// 2. The Math for the Ring
+			VAR Radius = 40
+			VAR Circumference = 251.2 // 2 * pi * r
+			VAR DashOffset = Circumference - (Circumference * Pct) // How much empty space to leave
+			
+			// 3. Dynamic Color Logic
+			VAR RingColor = IF(Pct <= 0.70, "#449E74", "#D9534F") // Green if under 70%, Red if over
+			
+			// 4. Build the SVG String
+			RETURN
+			"data:image/svg+xml;utf8," & 
+			"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+			  
+			  <circle cx='50' cy='50' r='" & Radius & "' fill='none' stroke='#DDE2E5' stroke-width='10' />
+			  
+			  <circle cx='50' cy='50' r='" & Radius & "' fill='none' stroke='" & RingColor & "' stroke-width='10' 
+			          stroke-dasharray='" & Circumference & "' stroke-dashoffset='" & DashOffset & "' 
+			          stroke-linecap='round' transform='rotate(-90 50 50)' />
+			          
+			  <text x='50' y='56' text-anchor='middle' font-family='Segoe UI, Arial' font-weight='bold' font-size='22' fill='#333333'>" & PctText & "</text>
+			
+			</svg>"
+			```
+		displayFolder: CF
+		lineageTag: 9cb17a0c-6c90-4ec9-aba5-1de799a4c15d
+		dataCategory: ImageUrl
+
+	measure SVG_LinearProgressBar = ```
+			// 1. Fetch and Format the Data
+			VAR Pct = [Cost_Pct_of_Sales]
+			VAR PctText = FORMAT(Pct, "0.0%")
+			VAR COGS_Text = FORMAT([Total_COGS], "$#,,.0M")
+			VAR Sales_Text = FORMAT([Total_Sales], "$#,,.0M")
+			VAR Profit_Text = FORMAT([Gross_Profit], "$#,,.0M")
+			
+			// 2. Define the Dynamic Colors & Conditions
+			VAR IsOnTrack = Pct <= 0.70
+			VAR BarFill = IF(IsOnTrack, "#449E74", "#D9534F") 
+			VAR BackgroundFill = "#DDE2E5"
+			VAR TextMain = "#252423" 
+			VAR TextSub = "#605E5C"  
+			
+			// 3. Map the Progress Bar Math
+			VAR MaxBarWidth = 300
+			VAR CurrentBarWidth = MIN(Pct * MaxBarWidth, MaxBarWidth) 
+			
+			// 4. Define the Dynamic Icon Path (Checkmark vs Cross)
+			// The transform='translate(300, 15)' pushes the icon to the top right corner
+			VAR IconPath = IF(
+			    IsOnTrack,
+			    "<path d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z' fill='" & BarFill & "' transform='translate(300, 15)'/>",
+			    "<path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z' fill='" & BarFill & "' transform='translate(300, 15)'/>"
+			)
+			
+			// 5. Build the Unified SVG String
+			RETURN
+			"data:image/svg+xml;utf8," & 
+			"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 350 150'>
+			    
+			    <rect x='0' y='0' width='8' height='150' fill='" & BarFill & "' />
+			
+			    <text x='25' y='30' font-family='Segoe UI, Arial, sans-serif' font-size='14' fill='" & TextSub & "'>COGS % of Sales</text>
+			
+			    <text x='25' y='65' font-family='Segoe UI, Arial, sans-serif' font-size='36' font-weight='bold' fill='" & TextMain & "'>" & PctText & "</text>
+			
+			    <text x='25' y='85' font-family='Segoe UI, Arial, sans-serif' font-size='12' fill='" & TextSub & "'>" & COGS_Text & " / " & Sales_Text & " spent</text>
+			
+			    <rect x='25' y='100' width='" & MaxBarWidth & "' height='10' rx='5' fill='" & BackgroundFill & "' />
+			    
+			    <rect x='25' y='100' width='" & CurrentBarWidth & "' height='10' rx='5' fill='" & BarFill & "' />
+			
+			    <text x='25' y='130' font-family='Segoe UI, Arial, sans-serif' font-size='12' font-weight='600' fill='" & TextSub & "'>" & Profit_Text & " retained as profit</text>
+			
+			    " & IconPath & "
+			
+			</svg>"
+			```
+		displayFolder: CF
+		lineageTag: b6be88d8-6a32-4567-9919-2cb70bda5f74
+		dataCategory: ImageUrl
+
+	measure Text_Spent_Context = ```
+			
+			FORMAT([Total_COGS], "$#,,.0M") & " / " & FORMAT([Total_Sales], "$#,,.0M") & " spent"
+			
+			```
+		displayFolder: CF
+		lineageTag: d5776c48-35d5-4bae-acb4-7909f583ce5b
+
+	measure Text_Retained_Context =
+			
+			FORMAT([Gross_Profit], "$#,,.0M") & " retained as profit"
+		displayFolder: CF
+		lineageTag: 2a2bf96d-46dd-4c6b-ba45-76fa072621e8
 
 	partition _measures = m
 		mode: import
 		source =
 				let
 				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
-				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Column1", type text}})
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Column1", type text}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Column1"})
 				in
-				    #"Changed Type"
+				    #"Removed Columns"
 
 	annotation PBI_ResultType = Table
 
