@@ -29,4 +29,4 @@ The core of the visual is powered by a single DAX measure (`SVG_AllInOne_KPI_Fin
 4. Add a native **Image Visual** to the canvas and bind the measure to it. 
 
 ---
-*Developed by Iswz_r*
+*Developed by Iswzr*
