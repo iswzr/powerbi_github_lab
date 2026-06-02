@@ -1,0 +1,75 @@
+table DateTable
+	lineageTag: a0d5ddf9-ecfe-441d-9762-7f64e2d4c91b
+	dataCategory: Time
+
+	column Date
+		isKey
+		formatString: General Date
+		lineageTag: 85772e76-4830-4288-a810-ef80fd293b90
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		formatString: 0
+		lineageTag: e12fc04b-72a4-4cdb-8e80-88000d3df458
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Number'
+		formatString: 0
+		lineageTag: d67e2008-5c5e-4901-9f5f-dc61f7ff3789
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Number]
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonth
+		formatString: 0
+		lineageTag: 8a81e793-8132-470c-9c6f-78cad4fa6f40
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearMonth]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthLabel
+		lineageTag: c887eb29-dfaf-46d5-a443-eb96440df870
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthLabel]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		lineageTag: 98a76631-eb6d-414e-af83-d97d182f99aa
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Quarter]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DateTable = calculated
+		mode: import
+		source =
+				
+				VAR _Min = MIN( financials[Date] )
+				VAR _Max = MAX( financials[Date] )
+				RETURN
+				ADDCOLUMNS(
+				    CALENDAR( _Min, _Max ),
+				    "Year",        YEAR( [Date] ),
+				    "Month Number", MONTH( [Date] ),
+				    "YearMonth",   YEAR( [Date] ) * 100 + MONTH( [Date] ),
+				    "MonthLabel",  FORMAT( [Date], "MMM YYYY" ),
+				    "Quarter",     "Q" & QUARTER( [Date] )
+				)
+
+	annotation PBI_Id = 84c19b60e44e4a04b58514ae0ca69921
+

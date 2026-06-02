@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.8.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
   "name": "2c024b7def5e6aab0e5f",
   "position": {
-    "x": 268.33333333333337,
-    "y": 118.33333333333334,
+    "x": 973,
+    "y": 68,
     "z": 5,
-    "height": 153.33333333333334,
-    "width": 176.66666666666669,
+    "height": 171,
+    "width": 123,
     "tabOrder": 2
   },
   "visual": {
@@ -52,5 +52,23 @@
       }
     },
     "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "e07aefbebfb5f4af4789",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "financials"
+              }
+            },
+            "Property": "Segment"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
   }
 }

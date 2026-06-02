@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
-  "name": "52acdac0984b167a9ca6",
+  "name": "8b63dc172c58f41c0bf8",
   "position": {
-    "x": 0,
-    "y": 0,
-    "z": 4,
-    "height": 107.5,
-    "width": 309.16666666666669,
-    "tabOrder": 1
+    "x": 77,
+    "y": 196,
+    "z": 6,
+    "height": 369,
+    "width": 829,
+    "tabOrder": 3
   },
   "visual": {
     "visualType": "cardVisual",
@@ -23,14 +23,32 @@
                       "Entity": "_measures"
                     }
                   },
-                  "Property": "SVG_LinearProgressBar"
+                  "Property": "SVG_SalesLineChart"
                 }
               },
-              "queryRef": "_measures.SVG_LinearProgressBar",
-              "nativeQueryRef": "SVG_LinearProgressBar"
+              "queryRef": "_measures.SVG_SalesLineChart",
+              "nativeQueryRef": "SVG_SalesLineChart"
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_measures"
+                  }
+                },
+                "Property": "SVG_SalesLineChart"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
       }
     },
     "objects": {
@@ -72,7 +90,7 @@
                       "Entity": "_measures"
                     }
                   },
-                  "Property": "SVG_LinearProgressBar"
+                  "Property": "SVG_SalesLineChart"
                 }
               }
             },
@@ -93,7 +111,7 @@
             "position": {
               "expr": {
                 "Literal": {
-                  "Value": "'Top'"
+                  "Value": "'Left'"
                 }
               }
             },
@@ -136,6 +154,20 @@
               "expr": {
                 "Literal": {
                   "Value": "10L"
+                }
+              }
+            },
+            "horizontalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'center'"
+                }
+              }
+            },
+            "rectangleRoundedCurveCustomStyle": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }
@@ -217,6 +249,48 @@
                   "Value": "'referenceLabel_image_callout'"
                 }
               }
+            },
+            "autoGrid": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "columnCount": {
+              "expr": {
+                "Literal": {
+                  "Value": "1L"
+                }
+              }
+            },
+            "showFixedSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "orientation": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "style": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table'"
+                }
+              }
+            },
+            "rowCount": {
+              "expr": {
+                "Literal": {
+                  "Value": "1L"
+                }
+              }
             }
           }
         }
@@ -243,7 +317,7 @@
             "overFlowDirection": {
               "expr": {
                 "Literal": {
-                  "Value": "1D"
+                  "Value": "0D"
                 }
               }
             },
@@ -372,6 +446,76 @@
             "id": "default"
           }
         }
+      ],
+      "cardImage": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "imageType": {
+              "expr": {
+                "Literal": {
+                  "Value": "'imageUrl'"
+                }
+              }
+            },
+            "imageData": {
+              "expr": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_measures"
+                    }
+                  },
+                  "Property": "SVG_SalesLineChart"
+                }
+              }
+            },
+            "imageDataFit": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Fill'"
+                }
+              }
+            },
+            "imageUrl": {
+              "expr": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_measures"
+                    }
+                  },
+                  "Property": "SVG_SalesLineChart"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
+          }
+        }
+      ],
+      "grid": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
+          }
+        }
       ]
     },
     "visualContainerObjects": {
@@ -469,5 +613,23 @@
       ]
     },
     "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "99f1aec855b37a488106",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_measures"
+              }
+            },
+            "Property": "SVG_SalesLineChart"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

@@ -72,56 +72,104 @@ table _measures
 		lineageTag: 9cb17a0c-6c90-4ec9-aba5-1de799a4c15d
 		dataCategory: ImageUrl
 
-	measure SVG_LinearProgressBar = ```
-			// 1. Fetch and Format the Data
-			VAR Pct = [Cost_Pct_of_Sales]
-			VAR PctText = FORMAT(Pct, "0.0%")
-			VAR COGS_Text = FORMAT([Total_COGS], "$#,,.0M")
-			VAR Sales_Text = FORMAT([Total_Sales], "$#,,.0M")
-			VAR Profit_Text = FORMAT([Gross_Profit], "$#,,.0M")
+	measure SVG_LinearProgressBar =
 			
-			// 2. Define the Dynamic Colors & Conditions
-			VAR IsOnTrack = Pct <= 0.70
-			VAR BarFill = IF(IsOnTrack, "#449E74", "#D9534F") 
-			VAR BackgroundFill = "#DDE2E5"
-			VAR TextMain = "#252423" 
-			VAR TextSub = "#605E5C"  
 			
-			// 3. Map the Progress Bar Math
-			VAR MaxBarWidth = 300
-			VAR CurrentBarWidth = MIN(Pct * MaxBarWidth, MaxBarWidth) 
+			// ── 0. GUARD: wrap every base measure ─────────────────────────────────────────
+			VAR _Pct        = IFERROR( [Cost_Pct_of_Sales], 0 )
+			VAR _COGS       = IFERROR( [Total_COGS],        0 )
+			VAR _Sales      = IFERROR( [Total_Sales],        0 )
+			VAR _Profit     = IFERROR( [Gross_Profit],       0 )
 			
-			// 4. Define the Dynamic Icon Path (Checkmark vs Cross)
-			// The transform='translate(300, 15)' pushes the icon to the top right corner
-			VAR IconPath = IF(
-			    IsOnTrack,
-			    "<path d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z' fill='" & BarFill & "' transform='translate(300, 15)'/>",
-			    "<path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z' fill='" & BarFill & "' transform='translate(300, 15)'/>"
-			)
+			// ── 1. SMART FORMAT HELPER (inline, repeated per value) ───────────────────────
+			// Thresholds:  ≥ 1 M → $X.XM  |  ≥ 1 K → $X.XK  |  > 0 → $XXX  |  0 → "–"
 			
-			// 5. Build the Unified SVG String
+			VAR PctText = FORMAT( _Pct, "0.0%" )
+			
+			// COGS
+			VAR CogsText =
+			    IF( _COGS = 0,    "–",
+			    IF( ABS(_COGS) >= 1000000,  "$" & FORMAT( _COGS / 1000000, "0.0" ) & "M",
+			    IF( ABS(_COGS) >= 1000,     "$" & FORMAT( _COGS / 1000,    "0.0" ) & "K",
+			                                "$" & FORMAT( _COGS,            "0"   )
+			    )))
+			
+			// Sales
+			VAR SalesText =
+			    IF( _Sales = 0,   "–",
+			    IF( ABS(_Sales) >= 1000000, "$" & FORMAT( _Sales / 1000000, "0.0" ) & "M",
+			    IF( ABS(_Sales) >= 1000,    "$" & FORMAT( _Sales / 1000,    "0.0" ) & "K",
+			                                "$" & FORMAT( _Sales,            "0"   )
+			    )))
+			
+			// Profit
+			VAR ProfitText =
+			    IF( _Profit = 0,  "–",
+			    IF( ABS(_Profit) >= 1000000, "$" & FORMAT( _Profit / 1000000, "0.0" ) & "M",
+			    IF( ABS(_Profit) >= 1000,    "$" & FORMAT( _Profit / 1000,    "0.0" ) & "K",
+			                                 "$" & FORMAT( _Profit,            "0"   )
+			    )))
+			
+			// ── 2. THRESHOLD & STATUS ─────────────────────────────────────────────────────
+			VAR Threshold  = 0.70                          // ← single place to change
+			VAR IsOnTrack  = _Pct <= Threshold
+			
+			// ── 3. COLORS — rgb() avoids the %23/#  encoding problem entirely ─────────────
+			VAR ColBar  = IF( IsOnTrack, "rgb(68,158,116)",  "rgb(217,83,79)"  )  // green / red
+			VAR ColBg   = "rgb(221,226,229)"   // track background
+			VAR ColMain = "rgb(37,36,35)"      // primary text
+			VAR ColSub  = "rgb(96,94,92)"      // secondary text
+			
+			// ── 4. PROGRESS BAR GEOMETRY ──────────────────────────────────────────────────
+			VAR MaxW       = 300
+			// Clamp: 0 → MaxW.  FORMAT with en-US locale prevents comma decimal separator.
+			VAR FillW      = FORMAT( MAX( 0, MIN( _Pct * MaxW, MaxW ) ), "0", "en-US" )
+			VAR MaxWStr    = FORMAT( MaxW, "0", "en-US" )
+			
+			// ── 5. STATUS ICON ─────────────────────────────────────────────────────────────
+			// <g> wraps the 24-px Material path and applies translate + scale together.
+			// Result: ~22 × 22 px glyph anchored to top-right of the card.
+			VAR IconPath =
+			    IF(
+			        IsOnTrack,
+			        "M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z",
+			        "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+			    )
+			VAR Icon =
+			    "<g transform='translate(315,8) scale(0.92)'>" &
+			        "<path d='" & IconPath & "' fill='" & ColBar & "'/>" &
+			    "</g>"
+			
+			// ── 6. ASSEMBLE SVG (one string per element, no raw newlines) ─────────────────
 			RETURN
-			"data:image/svg+xml;utf8," & 
-			"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 350 150'>
-			    
-			    <rect x='0' y='0' width='8' height='150' fill='" & BarFill & "' />
+			"data:image/svg+xml;utf8," &
+			"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 350 150'>" &
 			
-			    <text x='25' y='30' font-family='Segoe UI, Arial, sans-serif' font-size='14' fill='" & TextSub & "'>COGS % of Sales</text>
+			    // Left accent bar
+			    "<rect x='0' y='0' width='8' height='150' fill='" & ColBar & "'/>" &
 			
-			    <text x='25' y='65' font-family='Segoe UI, Arial, sans-serif' font-size='36' font-weight='bold' fill='" & TextMain & "'>" & PctText & "</text>
+			    // Title
+			    "<text x='25' y='30' font-family='Segoe UI,Arial,sans-serif' font-size='14' fill='" & ColSub & "'>COGS % of Sales</text>" &
 			
-			    <text x='25' y='85' font-family='Segoe UI, Arial, sans-serif' font-size='12' fill='" & TextSub & "'>" & COGS_Text & " / " & Sales_Text & " spent</text>
+			    // Large KPI number
+			    "<text x='25' y='65' font-family='Segoe UI,Arial,sans-serif' font-size='36' font-weight='bold' fill='" & ColMain & "'>" & PctText & "</text>" &
 			
-			    <rect x='25' y='100' width='" & MaxBarWidth & "' height='10' rx='5' fill='" & BackgroundFill & "' />
-			    
-			    <rect x='25' y='100' width='" & CurrentBarWidth & "' height='10' rx='5' fill='" & BarFill & "' />
+			    // Subtitle: spent line
+			    "<text x='25' y='85' font-family='Segoe UI,Arial,sans-serif' font-size='12' fill='" & ColSub & "'>" & CogsText & " / " & SalesText & " spent</text>" &
 			
-			    <text x='25' y='130' font-family='Segoe UI, Arial, sans-serif' font-size='12' font-weight='600' fill='" & TextSub & "'>" & Profit_Text & " retained as profit</text>
+			    // Progress bar: background track
+			    "<rect x='25' y='100' width='" & MaxWStr & "' height='10' rx='5' fill='" & ColBg  & "'/>" &
 			
-			    " & IconPath & "
+			    // Progress bar: filled portion
+			    "<rect x='25' y='100' width='" & FillW    & "' height='10' rx='5' fill='" & ColBar & "'/>" &
 			
-			</svg>"
-			```
+			    // Footer: profit retained
+			    "<text x='25' y='130' font-family='Segoe UI,Arial,sans-serif' font-size='12' font-weight='600' fill='" & ColSub & "'>" & ProfitText & " retained as profit</text>" &
+			
+			    // Status icon (top-right, properly scaled)
+			    Icon &
+			
+			"</svg>"
 		displayFolder: CF
 		lineageTag: b6be88d8-6a32-4567-9919-2cb70bda5f74
 		dataCategory: ImageUrl
@@ -139,6 +187,186 @@ table _measures
 			FORMAT([Gross_Profit], "$#,,.0M") & " retained as profit"
 		displayFolder: CF
 		lineageTag: 2a2bf96d-46dd-4c6b-ba45-76fa072621e8
+
+	measure SVG_SalesLineChart = ```
+			
+			
+			// ── 0. GUARD & DATA ───────────────────────────────────────────────────────────
+			VAR _Ranked = ADDCOLUMNS(
+			    SUMMARIZE(
+			        ALLSELECTED( financials ),
+			        DateTable[YearMonth],
+			        DateTable[MonthLabel]
+			    ),
+			    "MoSales", [Total_Sales]
+			)
+			
+			VAR _Table = ADDCOLUMNS(
+			    _Ranked,
+			    "RowNum", RANKX( _Ranked, [YearMonth],, ASC, Dense )
+			)
+			
+			// ── 1. STATS ──────────────────────────────────────────────────────────────────
+			VAR _Max   = MAXX( _Table, [MoSales] )
+			VAR _Min   = MINX( _Table, [MoSales] )
+			VAR _Total = SUMX( _Table, [MoSales] )
+			VAR _Count = COUNTROWS( _Table )
+			VAR _Avg   = DIVIDE( _Total, _Count, 0 )
+			
+			// ── 2. SMART FORMAT ───────────────────────────────────────────────────────────
+			VAR TotalText =
+			    IF( _Total >= 1000000, "$" & FORMAT( _Total/1000000, "0.0", "en-US" ) & "M",
+			    IF( _Total >= 1000,    "$" & FORMAT( _Total/1000,    "0.0", "en-US" ) & "K",
+			                           "$" & FORMAT( _Total,          "0",  "en-US" ) ))
+			
+			VAR AvgText =
+			    IF( _Avg >= 1000000, "$" & FORMAT( _Avg/1000000, "0.0", "en-US" ) & "M",
+			    IF( _Avg >= 1000,    "$" & FORMAT( _Avg/1000,    "0.0", "en-US" ) & "K",
+			                         "$" & FORMAT( _Avg,          "0",  "en-US" ) ))
+			
+			VAR MaxText =
+			    IF( _Max >= 1000000, "$" & FORMAT( _Max/1000000, "0.0", "en-US" ) & "M",
+			    IF( _Max >= 1000,    "$" & FORMAT( _Max/1000,    "0.0", "en-US" ) & "K",
+			                         "$" & FORMAT( _Max,          "0",  "en-US" ) ))
+			
+			VAR MinText =
+			    IF( _Min >= 1000000, "$" & FORMAT( _Min/1000000, "0.0", "en-US" ) & "M",
+			    IF( _Min >= 1000,    "$" & FORMAT( _Min/1000,    "0.0", "en-US" ) & "K",
+			                         "$" & FORMAT( _Min,          "0",  "en-US" ) ))
+			
+			// ── 3. CANVAS ─────────────────────────────────────────────────────────────────
+			VAR W      = 580
+			VAR H      = 220
+			VAR PadL   = 20
+			VAR PadR   = 20
+			VAR PadT   = 70
+			VAR PadB   = 30
+			VAR ChartW = W - PadL - PadR
+			VAR ChartH = H - PadT - PadB
+			
+			// ── 4. SCALE ──────────────────────────────────────────────────────────────────
+			VAR YLow   = _Min * 0.85
+			VAR YRange = _Max - YLow
+			VAR XStep  = DIVIDE( ChartW, MAX( _Count - 1, 1 ), 0 )
+			
+			// ── 5. POINTS ─────────────────────────────────────────────────────────────────
+			VAR _Points = ADDCOLUMNS(
+			    _Table,
+			    "PX", FORMAT( PadL + ( [RowNum] - 1 ) * XStep,                             "0.0", "en-US" ),
+			    "PY", FORMAT( PadT + ChartH - DIVIDE( [MoSales] - YLow, YRange ) * ChartH, "0.0", "en-US" )
+			)
+			
+			// ── 6. POLYLINE & FILL ────────────────────────────────────────────────────────
+			VAR PolyPts = CONCATENATEX( _Points, [PX] & "," & [PY], " ", [YearMonth], ASC )
+			
+			VAR FillPts =
+			    FORMAT( PadL,        "0", "en-US" ) & "," & FORMAT( PadT + ChartH, "0", "en-US" ) & " " &
+			    PolyPts & " " &
+			    FORMAT( PadL + ChartW,"0","en-US" ) & "," & FORMAT( PadT + ChartH, "0", "en-US" )
+			
+			// ── 7. LABELS ─────────────────────────────────────────────────────────────────
+			VAR Labels = CONCATENATEX(
+			    _Points,
+			    VAR px    = [PX]
+			    VAR py    = [PY]
+			    VAR sal   = [MoSales]
+			    VAR isMax = sal = _Max
+			    VAR isMin = sal = _Min
+			    VAR col   = IF( isMax, "rgb(52,168,83)", IF( isMin, "rgb(217,83,79)", "rgb(120,120,120)" ))
+			    VAR fw    = IF( isMax || isMin, "bold", "normal" )
+			    VAR fs    = IF( isMax || isMin, "11", "9" )
+			    VAR lbl   =
+			        IF( sal >= 1000000, FORMAT( sal/1000000, "0.0", "en-US" ) & "M",
+			        IF( sal >= 1000,    FORMAT( sal/1000,    "0",   "en-US" ) & "K",
+			                            FORMAT( sal,          "0",   "en-US" ) ))
+			    
+			    VAR pyNum = VALUE( py )
+			    VAR lyOff = IF( pyNum < PadT + 18,
+			                    FORMAT( pyNum + 16, "0", "en-US" ),
+			                    FORMAT( pyNum - 7,  "0", "en-US" ) )
+			    RETURN
+			    "<text x='" & px & "' y='" & lyOff &
+			    "' text-anchor='middle' font-family='Segoe UI,Arial,sans-serif'" &
+			    " font-size='" & fs & "' font-weight='" & fw & "' fill='" & col & "'>" & lbl & "</text>",
+			    " ", [YearMonth], ASC
+			)
+			
+			// ── 8. DOTS & TOOLTIPS ────────────────────────────────────────────────────────
+			VAR Dots = CONCATENATEX(
+			    _Points,
+			    VAR px    = [PX]
+			    VAR py    = [PY]
+			    VAR sal   = [MoSales]
+			    VAR mth   = [MonthLabel]
+			    VAR isMax = sal = _Max
+			    VAR isMin = sal = _Min
+			    
+			    // Increased target radius slightly so it's easier to hover
+			    VAR r     = IF( isMax || isMin, "6", "4" ) 
+			    
+			    VAR fill  = IF( isMax, "rgb(52,168,83)",  IF( isMin, "rgb(217,83,79)", "rgb(255,255,255)" ))
+			    VAR strk  = IF( isMax, "rgb(52,168,83)",  IF( isMin, "rgb(217,83,79)", "rgb(66,133,244)"  ))
+			    
+			    // Create the exact value tooltip context
+			    VAR hoverTip = mth & " • Sales: " & FORMAT(sal, "$#,##0", "en-US")
+			    
+			    RETURN
+			    "<circle cx='" & px & "' cy='" & py & "' r='" & r &
+			    "' fill='" & fill & "' stroke='" & strk & "' stroke-width='2'>" &
+			    "<title>" & hoverTip & "</title>" & // Injects the hover tooltip
+			    "</circle>",
+			    " ", [YearMonth], ASC
+			)
+			
+			// ── 9. X-AXIS LABELS ─────────────────────────────────────────────────────────
+			VAR LabelEvery = MAX( 1, ROUND( _Count / 6, 0 ) )
+			VAR XLabels = CONCATENATEX(
+			    FILTER( _Points, MOD( [RowNum] - 1, LabelEvery ) = 0 ),
+			    "<text x='" & [PX] & "' y='" & FORMAT( H - 8, "0", "en-US" ) &
+			    "' text-anchor='middle' font-family='Segoe UI,Arial,sans-serif'" &
+			    " font-size='10' fill='rgb(160,160,160)'>" & [MonthLabel] & "</text>",
+			    " ", [YearMonth], ASC
+			)
+			
+			// ── 10. PEAK / TROUGH MONTH NAMES ────────────────────────────────────────────
+			VAR PeakMonth   = MAXX( FILTER( _Ranked, [MoSales] = _Max ), [MonthLabel] )
+			VAR TroughMonth = MAXX( FILTER( _Ranked, [MoSales] = _Min ), [MonthLabel] )
+			
+			// ── 11. ASSEMBLE ──────────────────────────────────────────────────────────────
+			RETURN
+			"data:image/svg+xml;utf8," &
+			"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 " & FORMAT(W,"0","en-US") & " " & FORMAT(H,"0","en-US") & "'>" &
+			
+			    // Title
+			    "<text x='20' y='20' font-family='Segoe UI,Arial,sans-serif' font-size='14' font-weight='bold' fill='rgb(37,36,35)'>Sales</text>" &
+			
+			    // Total + Avg
+			    "<text x='75' y='20' font-family='Segoe UI,Arial,sans-serif' font-size='10' fill='rgb(96,94,92)'>Total: " & TotalText & "   Avg/mo: " & AvgText & "</text>" &
+			
+			    // Peak badge
+			    "<rect x='20' y='28' width='130' height='15' rx='3' fill='rgb(232,245,233)'/>" &
+			    "<text x='27' y='39' font-family='Segoe UI,Arial,sans-serif' font-size='9' fill='rgb(52,168,83)'>▲ Peak: " & MaxText & " · " & PeakMonth & "</text>" &
+			
+			    // Trough badge
+			    "<rect x='158' y='28' width='130' height='15' rx='3' fill='rgb(253,232,232)'/>" &
+			    "<text x='165' y='39' font-family='Segoe UI,Arial,sans-serif' font-size='9' fill='rgb(217,83,79)'>▼ Low: " & MinText & " · " & TroughMonth & "</text>" &
+			
+			    // Divider
+			    "<line x1='20' y1='50' x2='" & FORMAT(W-20,"0","en-US") & "' y2='50' stroke='rgb(230,230,230)' stroke-width='1'/>" &
+			
+			    // Area fill
+			    "<polygon points='" & FillPts & "' fill='rgb(66,133,244)' fill-opacity='0.10'/>" &
+			
+			    // Line
+			    "<polyline points='" & PolyPts & "' fill='none' stroke='rgb(66,133,244)' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'/>" &
+			
+			    Labels & Dots & XLabels &
+			
+			"</svg>"
+			```
+		displayFolder: CF
+		lineageTag: 2016f25a-402c-434d-a379-9cc8bd973c37
+		dataCategory: ImageUrl
 
 	partition _measures = m
 		mode: import

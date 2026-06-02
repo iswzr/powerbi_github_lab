@@ -1,0 +1,4 @@
+relationship 53fe1935-9280-5001-c113-f16343097ce8
+	fromColumn: financials.Date
+	toColumn: DateTable.Date
+
