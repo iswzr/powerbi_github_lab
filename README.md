@@ -4,7 +4,7 @@ Most Power BI dashboards answer "What is the number?" Great dashboards answer "W
 
 This repository demonstrates how to build a high-performance, bento-box style KPI card using a **single DAX measure**. By leveraging dynamic SVGs rendered natively in Power BI, we eliminate the need to stack multiple text boxes, shapes, and native visuals over each other.
 
-![KPI Card Preview](./Screenshot%202026-05-12%20152200.jfif) 
+![KPI Card Preview](./pic1.jfif) 
 ![KPI Card Preview](./line.jfif) 
 
 ## 🧠 The Design Philosophy
