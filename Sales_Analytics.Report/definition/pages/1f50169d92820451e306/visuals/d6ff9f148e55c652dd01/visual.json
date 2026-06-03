@@ -1,13 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
-  "name": "2c024b7def5e6aab0e5f",
+  "name": "d6ff9f148e55c652dd01",
   "position": {
-    "x": 1073.3333333333333,
-    "y": 10,
-    "z": 5,
-    "height": 171.11111111111111,
-    "width": 165.55555555555554,
-    "tabOrder": 2
+    "x": 916.710875331565,
+    "y": 373.47480106100795,
+    "z": 2,
+    "height": 310.0972590627764,
+    "width": 150
   },
   "visual": {
     "visualType": "tableEx",
@@ -21,14 +20,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "financials"
+                      "Entity": "DateTable"
                     }
                   },
-                  "Property": "Segment"
+                  "Property": "Year"
                 }
               },
-              "queryRef": "financials.Segment",
-              "nativeQueryRef": "Segment"
+              "queryRef": "DateTable.Year",
+              "nativeQueryRef": "Year"
             }
           ]
         }
@@ -40,10 +39,10 @@
               "Column": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "financials"
+                    "Entity": "DateTable"
                   }
                 },
-                "Property": "Segment"
+                "Property": "Year"
               }
             },
             "direction": "Ascending"
@@ -52,23 +51,5 @@
       }
     },
     "drillFilterOtherVisuals": true
-  },
-  "filterConfig": {
-    "filters": [
-      {
-        "name": "e07aefbebfb5f4af4789",
-        "field": {
-          "Column": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "financials"
-              }
-            },
-            "Property": "Segment"
-          }
-        },
-        "type": "Categorical"
-      }
-    ]
   }
 }

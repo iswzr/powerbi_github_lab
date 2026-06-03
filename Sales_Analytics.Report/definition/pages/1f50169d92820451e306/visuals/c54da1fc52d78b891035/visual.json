@@ -1,13 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
-  "name": "2c024b7def5e6aab0e5f",
+  "name": "c54da1fc52d78b891035",
   "position": {
-    "x": 1073.3333333333333,
-    "y": 10,
-    "z": 5,
-    "height": 171.11111111111111,
-    "width": 165.55555555555554,
-    "tabOrder": 2
+    "x": 916.710875331565,
+    "y": 65.641025641025649,
+    "z": 1,
+    "height": 307.83377541998232,
+    "width": 134.67727674624226,
+    "tabOrder": 1
   },
   "visual": {
     "visualType": "tableEx",
@@ -21,14 +21,14 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "financials"
+                      "Entity": "DateTable"
                     }
                   },
-                  "Property": "Segment"
+                  "Property": "Month Short"
                 }
               },
-              "queryRef": "financials.Segment",
-              "nativeQueryRef": "Segment"
+              "queryRef": "DateTable.Month Short",
+              "nativeQueryRef": "Month Short"
             }
           ]
         }
@@ -40,10 +40,10 @@
               "Column": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "financials"
+                    "Entity": "DateTable"
                   }
                 },
-                "Property": "Segment"
+                "Property": "Month Short"
               }
             },
             "direction": "Ascending"
@@ -52,23 +52,5 @@
       }
     },
     "drillFilterOtherVisuals": true
-  },
-  "filterConfig": {
-    "filters": [
-      {
-        "name": "e07aefbebfb5f4af4789",
-        "field": {
-          "Column": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "financials"
-              }
-            },
-            "Property": "Segment"
-          }
-        },
-        "type": "Categorical"
-      }
-    ]
   }
 }

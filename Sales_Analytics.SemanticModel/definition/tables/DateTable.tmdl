@@ -55,21 +55,98 @@ table DateTable
 
 		annotation SummarizationSetBy = Automatic
 
+	column 'Year Quarter'
+		lineageTag: 0ac3cfdd-dd2a-4f70-a7de-f188c0d9c2de
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year Quarter]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Name'
+		lineageTag: 8f6e16ce-7be0-4e0e-b13b-8656ffc2749f
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Name]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Short'
+		lineageTag: dfe70008-c3d9-4480-a372-3e421d4afe52
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Short]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Week Number'
+		formatString: 0
+		lineageTag: 5abe79ab-7987-45f0-9ba7-8e1c628f0196
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Week Number]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week'
+		formatString: 0
+		lineageTag: 8bcdc717-4b32-40aa-b987-e5fa02b40131
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Day of Week]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day Name'
+		lineageTag: efdc19ae-7591-41f9-be26-21c55a9d2bd0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Day Name]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day Name Short'
+		lineageTag: 6cd1e898-644f-4a7f-a9a4-c90dfb1177e3
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Day Name Short]
+		sortByColumn: 'Day of Week'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Month'
+		formatString: 0
+		lineageTag: 6f3630c8-5e7a-42e4-b13c-5233c1297103
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Day of Month]
+
+		annotation SummarizationSetBy = Automatic
+
 	partition DateTable = calculated
 		mode: import
-		source =
+		source = ```
 				
 				VAR _Min = MIN( financials[Date] )
 				VAR _Max = MAX( financials[Date] )
 				RETURN
 				ADDCOLUMNS(
 				    CALENDAR( _Min, _Max ),
-				    "Year",        YEAR( [Date] ),
-				    "Month Number", MONTH( [Date] ),
-				    "YearMonth",   YEAR( [Date] ) * 100 + MONTH( [Date] ),
-				    "MonthLabel",  FORMAT( [Date], "MMM YYYY" ),
-				    "Quarter",     "Q" & QUARTER( [Date] )
+				    "Year",           YEAR( [Date] ),
+				    "Quarter",        "Q" & QUARTER( [Date] ),
+				    "Year Quarter",   YEAR( [Date] ) & "-Q" & QUARTER( [Date] ),
+				    "Month Number",   MONTH( [Date] ),
+				    "Month Name",     FORMAT( [Date], "MMMM" ),
+				    "Month Short",    FORMAT( [Date], "MMM" ),
+				    "YearMonth",      YEAR( [Date] ) * 100 + MONTH( [Date] ),
+				    "MonthLabel",     FORMAT( [Date], "MMM YYYY" ),
+				    "Week Number",    WEEKNUM( [Date], 2 ), 
+				    "Day of Month",   DAY( [Date] ),          // Added here
+				    "Day of Week",    WEEKDAY( [Date], 2 ), 
+				    "Day Name",       FORMAT( [Date], "dddd" ),
+				    "Day Name Short", FORMAT( [Date], "ddd" )
 				)
+				```
 
 	annotation PBI_Id = 84c19b60e44e4a04b58514ae0ca69921
 
